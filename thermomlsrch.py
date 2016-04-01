@@ -24,7 +24,7 @@ dt = list(df.columns)
 bad_filenames = ["/home/bmanubay/.thermoml/j.fluid.2013.12.014.xml"]  # This file confirmed to have possible data entry errors.
 df = df[~df.filename.isin(bad_filenames)]
 
-experiments = ["Mass density, kg/m3", "Partial molar enthalpy, kJ/mol", "Partial molar volume, m3/mol", "Partial pressure, kPa", "Excess molar Gibbs energy, kJ/mol", "Excess molar enthalpy (molar enthalpy of mixing), kJ/mol", "Excess molar heat capacity, J/K/mol", "Excess molar volume, m3/mol"]
+experiments = ["Mass density, kg/m3", "Partial molar enthalpy, kJ/mol", "Partial molar volume, m3/mol", "Partial pressure, kPa", "Excess molar Gibbs energy, kJ/mol", "Excess molar enthalpy (molar enthalpy of mixing), kJ/mol", "Excess molar heat capacity, J/K/mol", "Excess molar volume, m3/mol", "(Relative) activity", "Activity coefficient", "Speed of sound, m/s"]
 
 ind_list = [df[exp].dropna().index for exp in experiments]
 ind = reduce(lambda x,y: x.union(y), ind_list)
@@ -141,6 +141,7 @@ df.dropna(axis=1, how='all', inplace=True)
 
 df.to_csv("/home/bmanubay/.thermoml/tables/full_filtered_data.csv")
 
+experiments = ["Mass density, kg/m3", "Partial molar enthalpy, kJ/mol", "Partial molar volume, m3/mol", "Excess molar enthalpy (molar enthalpy of mixing), kJ/mol", "Excess molar heat capacity, J/K/mol", "Excess molar volume, m3/mol", "Activity coefficient", "Speed of sound, m/s"]
 
 mu = df.groupby(["x1", "x2", "smiles1", "smiles2", "cas1", "cas2", "Temperature, K", "Pressure, kPa"])[experiments].mean()
 
