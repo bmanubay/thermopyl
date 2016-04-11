@@ -38,9 +38,6 @@ df["n_components"] = df.components.apply(lambda x: len(x.split("__")))
 df = df[df.n_components == 2]
 df.dropna(axis=1, how='all', inplace=True)
 
-counts_data = {}
-counts_data["0.  Two Components"] = df.count()[experiments]
-
 # Split components into separate columns (to use name_to_formula)
 df["x1"], df["x2"] =  zip(*df["components"].str.split('__').tolist())
 df['x2'].replace('', np.nan, inplace=True)
@@ -64,15 +61,11 @@ df["n_other_atoms2"] = df.n_atoms2 - df.n_desired_atoms2
 df = df[df.n_other_atoms1 == 0]
 df = df[df.n_other_atoms2 == 0]
 
-counts_data["1.  Druglike Elements"] = df.count()[experiments]
-
 df = df[df.n_heavy_atoms1 > 0]
 df = df[df.n_heavy_atoms1 <= 10]
 df = df[df.n_heavy_atoms2 > 0]
 df = df[df.n_heavy_atoms2 <= 10]
 df.dropna(axis=1, how='all', inplace=True)
-
-counts_data["2.  Heavy Atoms"] = df.count()[experiments]
 
 df["smiles1"] = df.x1.apply(lambda x: resolve_cached(x, "smiles"))  # This should be cached via sklearn.
 df = df[df.smiles1 != None]
@@ -93,7 +86,6 @@ df = df[df["smiles2"].str.contains('C=') == False]
 df.dropna(subset=["smiles2"], inplace=True)
 df = df.ix[df.smiles2.dropna().index]
 
-    
 df["cas1"] = df.x1.apply(lambda x: thermoml_lib.get_first_entry(resolve_cached(x, "cas")))  # This should be cached via sklearn.
 df = df[df.cas1 != None]
 df = df.ix[df.cas1.dropna().index]
@@ -101,13 +93,11 @@ df["cas2"] = df.x2.apply(lambda x: thermoml_lib.get_first_entry(resolve_cached(x
 df = df[df.cas2 != None]
 df = df.ix[df.cas2.dropna().index]
 
-
 # Neither names (components) nor smiles are unique.  Use CAS to ensure consistency.
 cannonical_smiles_lookup1 = df.groupby("cas1").smiles1.first()
 cannonical_components_lookup1 = df.groupby("cas1").x1.first()
 cannonical_smiles_lookup2 = df.groupby("cas2").smiles2.first()
 cannonical_components_lookup2 = df.groupby("cas2").x2.first()
-
 
 df["smiles1"] = df.cas1.apply(lambda x: cannonical_smiles_lookup1[x])
 df["x1"] = df.cas1.apply(lambda x: cannonical_components_lookup1[x])
@@ -118,24 +108,16 @@ df["x2"] = df.cas2.apply(lambda x: cannonical_components_lookup2[x])
 df = df[df['Temperature, K'] > 128.]
 df = df[df['Temperature, K'] < 400.]
 
-counts_data["3.  Temperature"] = df.count()[experiments]
-
 # Extract rows with pressure between 101.325 kPa and 101325 kPa
 df = df[df['Pressure, kPa'] > 100.]
 df = df[df['Pressure, kPa'] < 102000.]
 
-counts_data["4.  Pressure"] = df.count()[experiments]
-
 # Strip rows not in liquid phase
 df = df[df['phase']=='Liquid']
-
-counts_data["5.  Liquid state"] = df.count()[experiments]
-
 
 df.dropna(axis=1, how='all', inplace=True)
 
 df["filename"] = df["filename"].map(lambda x: x.lstrip('/home/bmanubay/.thermoml/').rstrip('.xml'))
-
 
 dfbig = pd.concat([df['filename'], df['x1'], df['x2'], df["components"], df["Mole fraction"], df["Mass density, kg/m3"], df["Mass density, kg/m3_std"], df["Excess molar enthalpy (molar enthalpy of mixing), kJ/mol"], df["Excess molar enthalpy (molar enthalpy of mixing), kJ/mol_std"], df["Excess molar heat capacity, J/K/mol"], df["Excess molar heat capacity, J/K/mol_std"], df["Excess molar volume, m3/mol"], df["Excess molar volume, m3/mol_std"], df["Activity coefficient"], df["Activity coefficient_std"], df["Speed of sound, m/s"], df["Speed of sound, m/s_std"], df["Relative permittivity at zero frequency"], df["Relative permittivity at zero frequency_std"]], axis=1, keys=["filename", "x1", "x2", "components", "Mole fraction", "Mass density, kg/m3", "Mass density, kg/m3_std", "Excess molar enthalpy (molar enthalpy of mixing), kJ/mol", "Excess molar enthalpy (molar enthalpy of mixing), kJ/mol_std", "Excess molar heat capacity, J/K/mol", "Excess molar heat capacity, J/K/mol_std", "Excess molar volume, m3/mol", "Excess molar volume, m3/mol_std", "Activity coefficient", "Activity coefficient_std", "Speed of sound, m/s", "Speed of sound, m/s_std", "Relative permittivity at zero frequency", "Relative permittivity at zero frequency_std"])
 
